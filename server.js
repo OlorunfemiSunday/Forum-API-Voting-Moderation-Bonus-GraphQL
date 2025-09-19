@@ -8,6 +8,11 @@ const mongoose = require('mongoose');
 const authRoutes = require('./src/routes/auth');
 const threadRoutes = require('./src/routes/threads');
 const commentRoutes = require('./src/routes/comments');
+const adminRoutes = require('./src/routes/admin'); // new admin routes
+
+// Optional GraphQL
+const { graphqlHTTP } = require('express-graphql');
+const schema = require('./src/graphql/schema'); // create this for threads & comments
 
 const app = express();
 
@@ -15,17 +20,24 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-// Routes
+// API Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/threads', threadRoutes);
 app.use('/api/comments', commentRoutes);
+app.use('/api/admin', adminRoutes); // admin moderation
+
+// GraphQL endpoint (optional)
+app.use('/graphql', graphqlHTTP({
+  schema,
+  graphiql: true
+}));
 
 // Health check endpoint
 app.get('/', (req, res) => {
   res.send('Forum API is running ✅');
 });
 
-// Error handler (last middleware)
+// Global error handler
 app.use((err, req, res, next) => {
   console.error('Error:', err);
   res.status(500).json({ error: err.message || 'Internal Server Error' });
